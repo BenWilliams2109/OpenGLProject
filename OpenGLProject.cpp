@@ -102,19 +102,30 @@ int main()
 	float vertices[] = {
 		-0.5f, -0.5f, 0.0f,
 		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
+		0.0f, 0.5f, 0.0f,
 	};
 
 	//Unique vertex buffer object taking bugger ID 1
-	unsigned int VBO;
+	unsigned int VBO, VAO;
 	glGenBuffers(1, &VBO);
+	glGenVertexArrays(1, &VAO);
+
+	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+	glBindVertexArray(VAO);
 
 	//Bind newly created bugger to the GL_ARRAY_BUFFER target
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	//Copy use-defined data into the currently bound buffer (to VBO as glBindBuffer means calls to GL_ARRAY_BUFFER configure VBO)
+	//Copy user-defined data into the currently bound buffer (to VBO as glBindBuffer means calls to GL_ARRAY_BUFFER configure VBO)
 	//glBufferData(typeOfBuffer, sizeOfBufferInBytes, actualDataWeWantToSend, specifyHowGraphicsCardManagesGivenData)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//Tell OpenGL how to interpret the vertex data after binding vertex buffer
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Wireframe mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -123,8 +134,13 @@ int main()
 		processInput(window);
 
 		//Rendering commands
-		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		//Draw our first triangle
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		//Check and call events and swap the buffers
 		glfwSwapBuffers(window);
